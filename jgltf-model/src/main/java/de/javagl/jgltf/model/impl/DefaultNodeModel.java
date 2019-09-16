@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import de.javagl.jgltf.model.CameraModel;
 import de.javagl.jgltf.model.MathUtils;
 import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.NodeModel;
@@ -42,7 +43,7 @@ import de.javagl.jgltf.model.Utils;
 /**
  * Implementation of a {@link NodeModel} 
  */
-public final class DefaultNodeModel extends AbstractNamedModelElement
+public class DefaultNodeModel extends AbstractNamedModelElement
     implements NodeModel
 {
     /**
@@ -76,6 +77,11 @@ public final class DefaultNodeModel extends AbstractNamedModelElement
      * The {@link SkinModel}
      */
     private SkinModel skinModel;
+    
+    /**
+     * The {@link CameraModel}
+     */
+    private CameraModel cameraModel;
 
     /**
      * The local transform matrix
@@ -112,19 +118,50 @@ public final class DefaultNodeModel extends AbstractNamedModelElement
     }
     
     /**
-     * Add the given child to this node
+     * Copy constructor that creates a shallow copy with <i>references</i>
+     * to the elements of the given model, except for the children and
+     * {@link MeshModel} instances (which will be empty in the copy).
      * 
-     * @param child The child
+     * @param other The other {@link NodeModel}
+     */
+    public DefaultNodeModel(NodeModel other)
+    {
+        this.cameraModel = other.getCameraModel();
+        this.children = new ArrayList<NodeModel>();
+        this.matrix = other.getMatrix();
+        this.meshModels = new ArrayList<MeshModel>();
+        this.parent = other.getParent();
+        this.rotation = other.getRotation();
+        this.scale = other.getScale();
+        this.skinModel = other.getSkinModel();
+        this.translation = other.getTranslation();
+        this.weights = other.getWeights();
+    }
+    
+    /**
+     * Set the parent of this node
+     * 
+     * @param parent The parent node
+     */
+    public void setParent(DefaultNodeModel parent)
+    {
+        this.parent = parent;
+    }
+    
+    /**
+     * Add the given child node
+     * 
+     * @param child The child node
      */
     public void addChild(DefaultNodeModel child)
     {
         Objects.requireNonNull(child, "The child may not be null");
         children.add(child);
-        child.parent = this;
+        child.setParent(this);
     }
     
     /**
-     * Add the given {@link MeshModel} to this node
+     * Add the given {@link MeshModel} 
      * 
      * @param meshModel The {@link MeshModel}
      */
@@ -135,7 +172,7 @@ public final class DefaultNodeModel extends AbstractNamedModelElement
     }
     
     /**
-     * Set the {@link SkinModel}
+     * Set the {@link SkinModel} 
      * 
      * @param skinModel The {@link SkinModel}
      */
@@ -144,6 +181,15 @@ public final class DefaultNodeModel extends AbstractNamedModelElement
         this.skinModel = skinModel;
     }
     
+    /**
+     * Set the {@link CameraModel} 
+     * 
+     * @param cameraModel The {@link CameraModel}
+     */
+    public void setCameraModel(CameraModel cameraModel)
+    {
+        this.cameraModel = cameraModel;
+    }
     
     @Override
     public NodeModel getParent()
@@ -167,6 +213,12 @@ public final class DefaultNodeModel extends AbstractNamedModelElement
     public SkinModel getSkinModel()
     {
         return skinModel;
+    }
+    
+    @Override
+    public CameraModel getCameraModel()
+    {
+        return cameraModel;
     }
     
     @Override

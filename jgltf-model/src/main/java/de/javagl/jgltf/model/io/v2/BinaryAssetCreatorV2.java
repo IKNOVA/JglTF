@@ -45,11 +45,11 @@ import de.javagl.jgltf.model.ImageModel;
 import de.javagl.jgltf.model.Optionals;
 import de.javagl.jgltf.model.io.Buffers;
 import de.javagl.jgltf.model.io.MimeTypes;
-import de.javagl.jgltf.model.v2.GltfModelV2;
+import de.javagl.jgltf.model.v2.GltfCreatorV2;
 
 /**
  * A class for creating a binary {@link GltfAssetV2} from a 
- * {@link GltfModelV2}.<br>
+ * {@link GltfModel}.<br>
  * <br>
  */
 final class BinaryAssetCreatorV2
@@ -69,18 +69,17 @@ final class BinaryAssetCreatorV2
     }
     
     /**
-     * Create a binary {@link GltfAssetV2} from the given {@link GltfModelV2}.
+     * Create a binary {@link GltfAssetV2} from the given {@link GltfModel}.
      * The resulting asset will have a {@link GlTF} that uses references to
      * {@link BufferView} objects in its {@link Buffer} and {@link Image}
      * elements. 
      * 
-     * @param gltfModel The {@link GltfModelV2}
+     * @param gltfModel The {@link GltfModel}
      * @return The {@link GltfAssetV2}
      */
-    GltfAssetV2 create(GltfModelV2 gltfModel)
+    GltfAssetV2 create(GltfModel gltfModel)
     {
-        GlTF inputGltf = gltfModel.getGltf();
-        GlTF outputGltf = GltfUtilsV2.copy(inputGltf);
+        GlTF outputGltf = GltfCreatorV2.create(gltfModel);
         
         // Create the new byte buffer for the data of the "binary_glTF" Buffer
         int binaryGltfBufferSize = 
@@ -175,7 +174,7 @@ final class BinaryAssetCreatorV2
 
         // Place the newly created lists into the output glTF,
         // if there have been non-null lists for them in the input
-        if (inputGltf.getImages() != null)
+        if (!oldImages.isEmpty())
         {
             outputGltf.setImages(newImages);
         }
@@ -195,7 +194,7 @@ final class BinaryAssetCreatorV2
      * @param gltfModel The {@link GltfModel}
      * @return The total size for the binary glTF buffer
      */
-    private static int computeBinaryGltfBufferSize(GltfModelV2 gltfModel)
+    private static int computeBinaryGltfBufferSize(GltfModel gltfModel)
     {
         int binaryGltfBufferSize = 0;
         for (BufferModel bufferModel : gltfModel.getBufferModels())

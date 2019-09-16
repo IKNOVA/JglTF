@@ -42,6 +42,8 @@ import de.javagl.jgltf.model.Optionals;
 import de.javagl.jgltf.model.TextureModel;
 import de.javagl.jgltf.model.gl.ProgramModel;
 import de.javagl.jgltf.model.gl.ShaderModel;
+import de.javagl.jgltf.model.image.PixelData;
+import de.javagl.jgltf.model.image.PixelDatas;
 
 /**
  * A class maintaining the data for rendering a glTF with OpenGL.<br>
@@ -249,8 +251,12 @@ class GltfRenderData
         int magFilter = Optionals.of(
             textureModel.getMagFilter(),
             GltfConstants.GL_LINEAR);
-        int wrapS = textureModel.getWrapS();
-        int wrapT = textureModel.getWrapT();
+        int wrapS = Optionals.of(
+            textureModel.getWrapS(),
+            GltfConstants.GL_REPEAT);
+        int wrapT = Optionals.of(
+            textureModel.getWrapT(),
+            GltfConstants.GL_REPEAT);
         
         glContext.setGlTextureParameters(
             glTexture, minFilter, magFilter, wrapS, wrapT);

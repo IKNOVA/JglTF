@@ -34,6 +34,8 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageReader;
 
+import de.javagl.jgltf.model.image.ImageReaders;
+
 /**
  * Utility methods to related to the MIME type from data URLs or image data
  */
@@ -153,7 +155,7 @@ public class MimeTypes
      * This may,  for example, be <code>"image/png"</code> or 
      * <code>"image/gif"</code> or <code>"image/jpeg"</code> (<b>not</b> 
      * <code>"image/jpg"</code>!).<br> 
-     * <br>     *  
+     * <br>   
      * @param imageData The image data
      * @return The image format string
      */

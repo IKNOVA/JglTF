@@ -26,12 +26,12 @@
   <dependencies>
     <dependency>
       <groupId>de.javagl</groupId>
-      <artifactId>jgltf-impl-v1</artifactId>
+      <artifactId>jgltf-model</artifactId>
       <version>2.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>de.javagl</groupId>
-      <artifactId>jgltf-model</artifactId>
+      <artifactId>jgltf-model-builder</artifactId>
       <version>2.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>

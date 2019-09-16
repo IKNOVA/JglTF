@@ -38,16 +38,17 @@ import de.javagl.jgltf.impl.v2.Buffer;
 import de.javagl.jgltf.impl.v2.GlTF;
 import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.model.BufferModel;
+import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.ImageModel;
 import de.javagl.jgltf.model.Optionals;
 import de.javagl.jgltf.model.impl.UriStrings;
 import de.javagl.jgltf.model.io.GltfAsset;
 import de.javagl.jgltf.model.io.IO;
-import de.javagl.jgltf.model.v2.GltfModelV2;
+import de.javagl.jgltf.model.v2.GltfCreatorV2;
 
 /**
  * A class for creating a {@link GltfAssetV2} with a default data 
- * representation from a {@link GltfModelV2}.<br>
+ * representation from a {@link GltfModel}.<br>
  * <br>
  * In the default data representation, elements are referred to via URIs. 
  * Data elements like {@link Buffer} or {@link Image}
@@ -80,15 +81,14 @@ final class DefaultAssetCreatorV2
     }
 
     /**
-     * Create a default {@link GltfAssetV2} from the given {@link GltfModelV2}.
+     * Create a default {@link GltfAssetV2} from the given {@link GltfModel}.
      *  
-     * @param gltfModel The input {@link GltfModelV2}
+     * @param gltfModel The input {@link GltfModel}
      * @return The default {@link GltfAssetV2}
      */
-    GltfAssetV2 create(GltfModelV2 gltfModel)
+    GltfAssetV2 create(GltfModel gltfModel)
     {
-        GlTF inputGltf = gltfModel.getGltf();
-        GlTF outputGltf = GltfUtilsV2.copy(inputGltf);
+        GlTF outputGltf = GltfCreatorV2.create(gltfModel);
 
         List<Buffer> buffers = Optionals.of(outputGltf.getBuffers());
         List<Image> images = Optionals.of(outputGltf.getImages());
@@ -143,12 +143,12 @@ final class DefaultAssetCreatorV2
      * The given {@link Buffer} object will be modified accordingly, if 
      * necessary: Its URI will be set to be the new URI. 
      * 
-     * @param gltfModel The {@link GltfModelV2} 
+     * @param gltfModel The {@link GltfModel} 
      * @param index The index of the {@link Buffer}
      * @param buffer The {@link Buffer}
      */
     private void storeBufferAsDefault(
-        GltfModelV2 gltfModel, int index, Buffer buffer)
+        GltfModel gltfModel, int index, Buffer buffer)
     {
         BufferModel bufferModel = gltfModel.getBufferModels().get(index);
         ByteBuffer bufferData = bufferModel.getBufferData();
@@ -181,12 +181,12 @@ final class DefaultAssetCreatorV2
      * to a {@link Image#getBufferView() image buffer view}, then this
      * reference will be set to be <code>null</code>.
      *  
-     * @param gltfModel The {@link GltfModelV2} 
+     * @param gltfModel The {@link GltfModel} 
      * @param index The index of the {@link Image}
      * @param image The {@link Image}
      */
     private void storeImageAsDefault(
-        GltfModelV2 gltfModel, int index, Image image)
+        GltfModel gltfModel, int index, Image image)
     {
         ImageModel imageModel = gltfModel.getImageModels().get(index);
         ByteBuffer imageData = imageModel.getImageData();

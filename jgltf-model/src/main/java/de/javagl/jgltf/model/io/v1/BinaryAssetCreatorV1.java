@@ -44,6 +44,7 @@ import de.javagl.jgltf.model.ImageModel;
 import de.javagl.jgltf.model.gl.ShaderModel;
 import de.javagl.jgltf.model.io.Buffers;
 import de.javagl.jgltf.model.v1.BinaryGltfV1;
+import de.javagl.jgltf.model.v1.GltfCreatorV1;
 import de.javagl.jgltf.model.v1.GltfExtensionsV1;
 import de.javagl.jgltf.model.v1.GltfIds;
 import de.javagl.jgltf.model.v1.GltfModelV1;
@@ -75,8 +76,7 @@ final class BinaryAssetCreatorV1
      */
     GltfAssetV1 create(GltfModelV1 gltfModel)
     {
-        GlTF inputGltf = gltfModel.getGltf();
-        GlTF outputGltf = GltfUtilsV1.copy(inputGltf);
+        GlTF outputGltf = GltfCreatorV1.create(gltfModel);
         
         // Create the new byte buffer for the data of the "binary_glTF" Buffer
         int binaryGltfBufferSize = 
@@ -103,21 +103,33 @@ final class BinaryAssetCreatorV1
         Map<String, Image> oldImages = copy(outputGltf.getImages());
         Map<String, Shader> oldShaders = copy(outputGltf.getShaders());
 
+        // TODO This is not solved very elegantly, due to the 
+        // transition of glTF 1.0 to glTF 2.0 - refactor this!
+        
+        // Create mappings from the IDs to the corresponding model elements.
+        // This assumes that they are in the same order.
+        Map<String, BufferModel> bufferIdToBuffer = GltfUtilsV1.createMap(
+            oldBuffers, gltfModel.getBufferModels());
+        Map<String, ImageModel> imageIdToImage = GltfUtilsV1.createMap(
+            oldImages, gltfModel.getImageModels());
+        Map<String, ShaderModel> shaderIdToShader = GltfUtilsV1.createMap(
+            oldShaders, gltfModel.getShaderModels());
+        
         // Place the data from buffers, images and shaders into the
         // new binary glTF buffer. The mappings from IDs to offsets 
         // inside the resulting buffer will be used to compute the
         // offsets for the buffer views
         Map<String, Integer> bufferOffsets = concatBuffers(
             oldBuffers.keySet(), 
-            id -> gltfModel.getBufferModelById(id).getBufferData(), 
+            id -> bufferIdToBuffer.get(id).getBufferData(), 
             binaryGltfByteBuffer);
         Map<String, Integer> imageOffsets = concatBuffers(
             oldImages.keySet(), 
-            id -> gltfModel.getImageModelById(id).getImageData(), 
+            id -> imageIdToImage.get(id).getImageData(), 
             binaryGltfByteBuffer);
         Map<String, Integer> shaderOffsets = concatBuffers(
             oldShaders.keySet(), 
-            id -> gltfModel.getShaderModelById(id).getShaderData(), 
+            id -> shaderIdToShader.get(id).getShaderData(), 
             binaryGltfByteBuffer);
         binaryGltfByteBuffer.position(0);
 
@@ -157,7 +169,7 @@ final class BinaryAssetCreatorV1
 
             // Create the BufferView for the image
             ByteBuffer imageData = 
-                gltfModel.getImageModelById(id).getImageData();
+                imageIdToImage.get(id).getImageData();
             int byteLength = imageData.capacity();
             int byteOffset = imageOffsets.get(id);
             BufferView imageBufferView = new BufferView();
@@ -196,7 +208,7 @@ final class BinaryAssetCreatorV1
 
             // Create the BufferView for the shader
             ByteBuffer shaderData = 
-                gltfModel.getShaderModelById(id).getShaderData();
+                shaderIdToShader.get(id).getShaderData();
             int byteLength = shaderData.capacity();
             int byteOffset = shaderOffsets.get(id);
             BufferView shaderBufferView = new BufferView();
@@ -219,15 +231,15 @@ final class BinaryAssetCreatorV1
 
         // Place the newly created mappings into the output glTF,
         // if there have been non-null mappings for them in the input
-        if (inputGltf.getBuffers() != null)
+        if (!newBuffers.isEmpty())
         {
             outputGltf.setBuffers(newBuffers);
         }
-        if (inputGltf.getImages() != null)
+        if (!newImages.isEmpty())
         {
             outputGltf.setImages(newImages);
         }
-        if (inputGltf.getShaders() != null)
+        if (!newShaders.isEmpty())
         {
             outputGltf.setShaders(newShaders);
         }
@@ -267,8 +279,8 @@ final class BinaryAssetCreatorV1
         }
         return binaryGltfBufferSize;
     }
-
-
+    
+    
     /**
      * Put the contents of all byte buffers that are associated with the
      * given keys into the given target buffer. This method assumes

@@ -28,6 +28,7 @@ package de.javagl.jgltf.model.io.v1;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -46,6 +47,7 @@ import de.javagl.jgltf.model.impl.UriStrings;
 import de.javagl.jgltf.model.io.GltfAsset;
 import de.javagl.jgltf.model.io.IO;
 import de.javagl.jgltf.model.v1.BinaryGltfV1;
+import de.javagl.jgltf.model.v1.GltfCreatorV1;
 import de.javagl.jgltf.model.v1.GltfExtensionsV1;
 import de.javagl.jgltf.model.v1.GltfModelV1;
 
@@ -96,31 +98,45 @@ final class DefaultAssetCreatorV1
      */
     GltfAssetV1 create(GltfModelV1 gltfModel)
     {
-        GlTF inputGltf = gltfModel.getGltf();
-        GlTF outputGltf = GltfUtilsV1.copy(inputGltf);
+        GlTF outputGltf = GltfCreatorV1.create(gltfModel);
         
         // Remove the binary glTF extension, if it was used
         GltfExtensionsV1.removeExtensionUsed(outputGltf, 
             BinaryGltfV1.getBinaryGltfExtensionName());
 
         existingBufferUriStrings = collectUriStrings(
-            Optionals.of(inputGltf.getBuffers()).values(),
+            Optionals.of(outputGltf.getBuffers()).values(),
             Buffer::getUri);
         existingImageUriStrings = collectUriStrings(
-            Optionals.of(inputGltf.getImages()).values(),
+            Optionals.of(outputGltf.getImages()).values(),
             Image::getUri);
         existingShaderUriStrings = collectUriStrings(
-            Optionals.of(inputGltf.getShaders()).values(),
+            Optionals.of(outputGltf.getShaders()).values(),
             Shader::getUri);
 
         this.gltfAsset = new GltfAssetV1(outputGltf, null);
         
+        // TODO This is not solved very elegantly, due to the 
+        // transition of glTF 1.0 to glTF 2.0 - refactor this!
+        
+        // Create mappings from the IDs to the corresponding model elements.
+        // This assumes that they are in the same order.
+        Map<String, BufferModel> bufferIdToBuffer = GltfUtilsV1.createMap(
+            outputGltf.getBuffers(), 
+            gltfModel.getBufferModels());
+        Map<String, ImageModel> imageIdToImage = GltfUtilsV1.createMap(
+            outputGltf.getImages(), 
+            gltfModel.getImageModels());
+        Map<String, ShaderModel> shaderIdToShader = GltfUtilsV1.createMap(
+            outputGltf.getShaders(), 
+            gltfModel.getShaderModels());
+        
         Optionals.of(outputGltf.getBuffers()).forEach((id, value) -> 
-            storeBufferAsDefault(gltfModel, id, value));
+            storeBufferAsDefault(gltfModel, id, value, bufferIdToBuffer::get));
         Optionals.of(outputGltf.getImages()).forEach((id, value) -> 
-            storeImageAsDefault(gltfModel, id, value));
+            storeImageAsDefault(gltfModel, id, value, imageIdToImage::get));
         Optionals.of(outputGltf.getShaders()).forEach((id, value) -> 
-            storeShaderAsDefault(gltfModel, id, value));
+            storeShaderAsDefault(gltfModel, id, value, shaderIdToShader::get));
 
         return gltfAsset;
     }
@@ -163,11 +179,13 @@ final class DefaultAssetCreatorV1
      * @param gltfModel The {@link GltfModelV1} 
      * @param id The ID of the {@link Buffer}
      * @param buffer The {@link Buffer}
+     * @param lookup The lookup from ID to model
      */
     private void storeBufferAsDefault(
-        GltfModelV1 gltfModel, String id, Buffer buffer)
+        GltfModelV1 gltfModel, String id, Buffer buffer, 
+        Function<? super String, ? extends BufferModel> lookup)
     {
-        BufferModel bufferModel = gltfModel.getBufferModelById(id);
+        BufferModel bufferModel = lookup.apply(id);
         ByteBuffer bufferData = bufferModel.getBufferData();
         
         String oldUriString = buffer.getUri();
@@ -201,13 +219,15 @@ final class DefaultAssetCreatorV1
      * @param gltfModel The {@link GltfModelV1} 
      * @param id The id of the {@link Image}
      * @param image The {@link Image}
+     * @param lookup The lookup from ID to model
      * @throws GltfException If the image format (and thus, the MIME type)
      * can not be determined from the image data  
      */
     private void storeImageAsDefault(
-        GltfModelV1 gltfModel, String id, Image image)
+        GltfModelV1 gltfModel, String id, Image image,
+        Function<? super String, ? extends ImageModel> lookup)
     {
-        ImageModel imageModel = gltfModel.getImageModelById(id);
+        ImageModel imageModel = lookup.apply(id);
         ByteBuffer imageData = imageModel.getImageData();
 
         String oldUriString = image.getUri();
@@ -245,11 +265,13 @@ final class DefaultAssetCreatorV1
      * @param gltfModel The {@link GltfModelV1} 
      * @param id The id of the {@link Shader}
      * @param shader The {@link Shader}
+     * @param lookup The lookup from ID to model
      */
     private void storeShaderAsDefault(
-        GltfModelV1 gltfModel, String id, Shader shader)
+        GltfModelV1 gltfModel, String id, Shader shader,
+        Function<? super String, ? extends ShaderModel> lookup)
     {
-        ShaderModel shaderModel = gltfModel.getShaderModelById(id);
+        ShaderModel shaderModel = lookup.apply(id);
         ByteBuffer shaderData = shaderModel.getShaderData();
 
         String oldUriString = shader.getUri();
