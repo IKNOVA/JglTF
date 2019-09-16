@@ -90,6 +90,14 @@ public interface GltfModel
     List<MaterialModel> getMaterialModels();
 
     /**
+     * Returns an unmodifiable view on the list of {@link MeshModel} 
+     * instances that have been created for the glTF.
+     * 
+     * @return The {@link MeshModel} instances
+     */
+    List<MeshModel> getMeshModels();
+    
+    /**
      * Returns an unmodifiable view on the list of {@link NodeModel} 
      * instances that have been created for the glTF.
      * 
@@ -106,11 +114,20 @@ public interface GltfModel
     List<SceneModel> getSceneModels();
 
     /**
+     * Returns an unmodifiable view on the list of {@link SkinModel} 
+     * instances that have been created for the glTF.
+     * 
+     * @return The {@link SkinModel} instances
+     */
+    List<SkinModel> getSkinModels();
+
+    /**
      * Returns an unmodifiable view on the list of {@link TextureModel} 
      * instances that have been created for the glTF.
      * 
      * @return The {@link TextureModel} instances
      */
     List<TextureModel> getTextureModels();
+    
 }
 

@@ -36,7 +36,7 @@ import de.javagl.jgltf.model.SceneModel;
 /**
  * Implementation of a {@link SceneModel} 
  */
-public final class DefaultSceneModel extends AbstractNamedModelElement
+public class DefaultSceneModel extends AbstractNamedModelElement
     implements SceneModel
 {
     /**
@@ -53,7 +53,7 @@ public final class DefaultSceneModel extends AbstractNamedModelElement
     }
     
     /**
-     * Add the given (root!) {@link NodeModel} to this scene
+     * Add the given (root) {@link NodeModel} to this scene
      * 
      * @param node The {@link NodeModel}
      */

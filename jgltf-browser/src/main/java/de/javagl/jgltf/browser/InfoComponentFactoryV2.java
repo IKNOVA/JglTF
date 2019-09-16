@@ -49,9 +49,9 @@ import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.model.AccessorData;
 import de.javagl.jgltf.model.AccessorDatas;
 import de.javagl.jgltf.model.AccessorModel;
+import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.ImageModel;
 import de.javagl.jgltf.model.Optionals;
-import de.javagl.jgltf.model.v2.GltfModelV2;
 
 /**
  * Utility class for creating info components for elements of a glTF 2.0 model
@@ -64,20 +64,28 @@ class InfoComponentFactoryV2
     private final InfoComponentFactory parent;
     
     /**
-     * The {@link GltfModelV2}
+     * The {@link GltfModel}
      */
-    private final GltfModelV2 gltfModel;
+    private final GltfModel gltfModel;
+    
+    /**
+     * The {@link GlTF}
+     */
+    private final GlTF gltf;
     
     /**
      * Default constructor
      * 
      * @param parent The parent {@link InfoComponentFactory}
-     * @param gltfModel The {@link GltfModelV2}
+     * @param gltfModel The {@link GltfModel}
+     * @param gltf The {@link GlTF}
      */
-    InfoComponentFactoryV2(InfoComponentFactory parent, GltfModelV2 gltfModel)
+    InfoComponentFactoryV2(
+        InfoComponentFactory parent, GltfModel gltfModel, GlTF gltf)
     {
         this.parent = parent;
         this.gltfModel = gltfModel;
+        this.gltf = gltf;
     }
     
     /**
@@ -204,7 +212,6 @@ class InfoComponentFactoryV2
         {
             return "(null)";
         }
-        GlTF gltf = gltfModel.getGltf();
         List<Accessor> accessors = Optionals.of(gltf.getAccessors());
         int index = accessors.indexOf(accessor);
         if (index == -1)
@@ -227,7 +234,6 @@ class InfoComponentFactoryV2
      */
     private JComponent createImageInfoComponent(Object selectedValue)
     {
-        GlTF gltf = gltfModel.getGltf();
         List<Image> images = Optionals.of(gltf.getImages());
         int index = images.indexOf(selectedValue);
         if (index == -1)

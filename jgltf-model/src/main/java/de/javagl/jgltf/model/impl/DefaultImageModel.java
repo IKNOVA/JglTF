@@ -35,7 +35,7 @@ import de.javagl.jgltf.model.io.Buffers;
 /**
  * Implementation of a {@link ImageModel}
  */
-public final class DefaultImageModel extends AbstractNamedModelElement
+public class DefaultImageModel extends AbstractNamedModelElement
     implements ImageModel
 {
     /**
@@ -46,7 +46,7 @@ public final class DefaultImageModel extends AbstractNamedModelElement
     /**
      * The MIME type of the image data in the buffer view model
      */
-    private final String mimeType;
+    private String mimeType;
     
     /**
      * The {@link BufferViewModel}
@@ -60,19 +60,14 @@ public final class DefaultImageModel extends AbstractNamedModelElement
     
     /**
      * Creates a new instance
-     * 
-     * @param mimeType The MIME type
-     * @param bufferViewModel The {@link BufferViewModel}
      */
-    public DefaultImageModel(
-        String mimeType, BufferViewModel bufferViewModel)
+    public DefaultImageModel()
     {
-        this.mimeType = mimeType;
-        this.bufferViewModel = bufferViewModel;
+        // Default constructor
     }
     
     /**
-     * Set the URI string of this image
+     * Set the URI
      * 
      * @param uri The URI
      */
@@ -80,9 +75,19 @@ public final class DefaultImageModel extends AbstractNamedModelElement
     {
         this.uri = uri;
     }
+    
+    /**
+     * Set the MIME type
+     * 
+     * @param mimeType The MIME type
+     */
+    public void setMimeType(String mimeType)
+    {
+        this.mimeType = mimeType;
+    }
 
     /**
-     * Set the {@link BufferViewModel} that this image refers to
+     * Set the {@link BufferViewModel} 
      * 
      * @param bufferViewModel The {@link BufferViewModel}
      */
@@ -92,9 +97,7 @@ public final class DefaultImageModel extends AbstractNamedModelElement
     }
     
     /**
-     * Set the data of this image. If the given data is <code>null</code>,
-     * then calls to {@link #getImageData()} will return the data of the
-     * {@link BufferViewModel} that was set with {@link #setBufferViewModel}
+     * Set the image data
      * 
      * @param imageData The image data
      */
